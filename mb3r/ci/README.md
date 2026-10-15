@@ -1,5 +1,18 @@
 # Recommendations resilience gate
 
+This is the existing OpenTelemetry fork that also contains the older runtime
+monitoring overlay. The application CI profiles in this directory are independent
+of that overlay; they do not launch Grafana or its exporter.
+
+Two entry points are available:
+
+| Workflow | Purpose | Parameters |
+|---|---|---|
+| MB3R resilience gate | Required PR acceptance check | Policy from the base commit |
+| [MB3R parameterized demo](DEMO.md) | Manual exploration with HTML/SVG report | Replica counts, SLO, failure model, trials and seed |
+
+The manual demo never satisfies or replaces the required PR status check.
+
 This is an application-consumer integration of Procrustes, Bering and Sheaft,
 not a copy of the paper reproduction runner. Open **Actions → MB3R resilience
 gate → Run workflow**, or open a pull request against this fork's main branch.
@@ -45,8 +58,9 @@ The same replica declaration controls the real disposable Compose deployment
 and the Bering model; the wrapper verifies both. Importance assists inspection,
 but each proposed change must be independently recalculated.
 
-The named check is **MB3R / recommendations gate**. Configure it as a required
-status check to prevent merging a rejected candidate. A red workflow alone is
+The named check is **MB3R / recommendations gate**. It is configured as a required
+status check on this fork's main branch, including administrators. If copying
+the integration, configure the same restriction. A red workflow alone is
 not a merge restriction. For a delivery pipeline, make promotion depend on this
 check; this example does not deploy an application to production.
 

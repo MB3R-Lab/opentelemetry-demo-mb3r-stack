@@ -1,0 +1,183 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+name: MB3R parameterized demo
+run-name: "MB3R demo · ${{ inputs.baseline_replicas }} → ${{ inputs.candidate_replicas }} · SLO ${{ inputs.slo }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      baseline_ref:
+        description: Baseline application branch or commit (with mb3r/ci profile)
+        default: main
+        required: true
+        type: string
+      baseline_replicas:
+        description: Baseline recommendation/catalog replicas (each 1..4)
+        default: '2/2'
+        required: true
+        type: string
+      candidate_replicas:
+        description: Candidate recommendation/catalog replicas (each 1..4)
+        default: '2/1'
+        required: true
+        type: string
+      slo:
+        description: Required operation availability (0 < SLO <= 1)
+        default: 0.95
+        required: true
+        type: number
+      failure_probability:
+        description: Independent failure probability per eligible replica (0..1)
+        default: 0.05
+        required: true
+        type: number
+      edge_live_probability:
+        description: Modeled channel liveness (0..1)
+        default: 0.995
+        required: true
+        type: number
+      minimum_certified_tolerance:
+        description: Required grid tolerance (0..0.25 for the current grid)
+        default: 0.10
+        required: true
+        type: number
+      max_regression:
+        description: Allowed drop in certified grid tolerance (0.02 = 2 pp)
+        default: 0.02
+        required: true
+        type: number
+      trials:
+        description: Trials per calculation (1000..100000)
+        default: 40000
+        required: true
+        type: number
+      seed:
+        description: Reproducible seed (integer 0..2147483647)
+        default: 2719
+        required: true
+        type: number
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mb3r-manual-demo-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  demo:
+    name: MB3R / exploratory comparison (not PR approval)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    outputs:
+      report_ready: ${{ steps.pages-artifact.outcome == 'success' }}
+    env:
+      BASE_SOURCE: ${{ github.workspace }}/.baseline
+      TOOLCHAIN_IMAGE: ghcr.io/mb3r-lab/mb3r-software-complex-repro@sha256:b6fb43c7988168cd2d80b2df37881bf6972d8018b824be69dadb5c4c41416e90
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - name: Check out the candidate application
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check out the baseline application
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.baseline_ref }}
+          path: .baseline
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check integration and report contracts
+        run: python -m unittest discover -s mb3r/ci -p 'test_*.py' -v
+      - name: Validate and record explicit manual parameters
+        env:
+          DEMO_INPUTS_JSON: ${{ toJSON(inputs) }}
+        run: python mb3r/ci/demo.py configure
+      - name: Obtain the same pinned public CLIs as the PR gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull "$TOOLCHAIN_IMAGE"
+          container=$(docker create --entrypoint /bin/true "$TOOLCHAIN_IMAGE")
+          trap 'docker rm "$container" >/dev/null' EXIT
+          mkdir -p "$RUNNER_TEMP/mb3r-bin" mb3r/out/demo
+          for tool in procrustes bering sheaft; do
+            docker cp "$container:/usr/local/bin/$tool" "$RUNNER_TEMP/mb3r-bin/$tool"
+            chmod +x "$RUNNER_TEMP/mb3r-bin/$tool"
+          done
+          docker cp "$container:/artifact/toolchain-lock.json" mb3r/out/demo/toolchain-lock.json
+          echo "$RUNNER_TEMP/mb3r-bin" >> "$GITHUB_PATH"
+      - name: Procrustes — baseline deployment and operation
+        run: python mb3r/ci/demo.py prepare baseline
+      - name: Procrustes — candidate deployment and operation
+        run: python mb3r/ci/demo.py prepare candidate
+      - name: Deploy baseline and collect fresh evidence
+        run: python mb3r/ci/demo.py observe baseline
+      - name: Bering — baseline discovery
+        run: python mb3r/ci/demo.py discover baseline
+      - name: Sheaft — baseline analysis under selected parameters
+        run: python mb3r/ci/demo.py analyze baseline
+      - name: Deploy candidate and collect fresh evidence
+        run: python mb3r/ci/demo.py observe candidate
+      - name: Bering — candidate discovery
+        run: python mb3r/ci/demo.py discover candidate
+      - name: Sheaft — candidate analysis and importance
+        run: python mb3r/ci/demo.py analyze candidate
+      - name: Build HTML report and GitHub summary even on failure
+        id: report
+        if: always()
+        run: python mb3r/ci/demo.py report
+      - name: Retain bounded raw evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mb3r-demo-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: mb3r/out/demo
+          retention-days: 3
+          if-no-files-found: error
+      - name: Downloadable HTML report
+        if: ${{ always() && steps.report.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: mb3r-demo-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: mb3r/out/demo/site
+          retention-days: 3
+          if-no-files-found: error
+      - name: Stage the reviewed main-branch report for Pages
+        id: pages-artifact
+        if: ${{ always() && steps.report.outcome == 'success' && github.ref == 'refs/heads/main' }}
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: mb3r/out/demo/site
+          retention-days: 1
+      - name: Preserve policy rejection as a red exploratory run
+        if: always()
+        run: python mb3r/ci/demo.py enforce
+
+  publish:
+    name: Publish the manual report (including policy failures)
+    needs: demo
+    if: ${{ always() && needs.demo.outputs.report_ready == 'true' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: mb3r-demo-pages
+      cancel-in-progress: false
+    steps:
+      - name: Deploy only the derived report, not raw observations
+        id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Link the published report
+        env:
+          REPORT_URL: ${{ steps.deployment.outputs.page_url }}
+        run: |
+          echo "Manual exploratory report (latest published run): $REPORT_URL" >> "$GITHUB_STEP_SUMMARY"
