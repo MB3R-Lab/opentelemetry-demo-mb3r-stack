@@ -1,4 +1,4 @@
 {
-  "description": "Candidate correction: add recommendation instead of catalog",
-  "replicas": {"recommendation": 3, "product-catalog": 1}
+  "description": "Verified alternative correction: restore catalog replication",
+  "replicas": {"recommendation": 2, "product-catalog": 2}
 }
