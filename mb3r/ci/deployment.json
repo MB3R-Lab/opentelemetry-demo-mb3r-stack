@@ -1,4 +1,4 @@
 {
-  "description": "Review candidate: remove one catalog replica",
-  "replicas": {"recommendation": 2, "product-catalog": 1}
+  "description": "Candidate correction: add recommendation instead of catalog",
+  "replicas": {"recommendation": 3, "product-catalog": 1}
 }
