@@ -1,0 +1,93 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+name: MB3R resilience gate
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      baseline_ref:
+        description: Accepted baseline branch or immutable commit
+        default: main
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: mb3r-resilience-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  resilience:
+    name: MB3R / recommendations gate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      BASE_SOURCE: ${{ github.workspace }}/.baseline
+      TOOLCHAIN_IMAGE: ghcr.io/mb3r-lab/mb3r-software-complex-repro@sha256:b6fb43c7988168cd2d80b2df37881bf6972d8018b824be69dadb5c4c41416e90
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - name: Check out the candidate application
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Check out the accepted baseline
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha || inputs.baseline_ref || 'main' }}
+          path: .baseline
+          persist-credentials: false
+      - name: Set up Python for integration glue
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check integration contracts
+        run: python -m unittest discover -s mb3r/ci -p 'test_*.py' -v
+      - name: Obtain the three pinned public CLIs
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker pull "$TOOLCHAIN_IMAGE"
+          container=$(docker create --entrypoint /bin/true "$TOOLCHAIN_IMAGE")
+          trap 'docker rm "$container" >/dev/null' EXIT
+          mkdir -p "$RUNNER_TEMP/mb3r-bin" mb3r/out/ci
+          for tool in procrustes bering sheaft; do
+            docker cp "$container:/usr/local/bin/$tool" "$RUNNER_TEMP/mb3r-bin/$tool"
+            chmod +x "$RUNNER_TEMP/mb3r-bin/$tool"
+          done
+          docker cp "$container:/artifact/toolchain-lock.json" mb3r/out/ci/toolchain-lock.json
+          echo "$RUNNER_TEMP/mb3r-bin" >> "$GITHUB_PATH"
+      - name: Procrustes — baseline deployment and operation
+        run: python mb3r/ci/gate.py prepare baseline
+      - name: Procrustes — candidate deployment and operation
+        run: python mb3r/ci/gate.py prepare candidate
+      - name: Run baseline and capture fresh HTTP responses and traces
+        run: python mb3r/ci/gate.py observe baseline
+      - name: Bering — discover the baseline operation
+        run: python mb3r/ci/gate.py discover baseline
+      - name: Sheaft — verify the accepted baseline
+        run: python mb3r/ci/gate.py analyze baseline
+      - name: Run candidate and capture fresh HTTP responses and traces
+        run: python mb3r/ci/gate.py observe candidate
+      - name: Bering — discover the candidate operation
+        run: python mb3r/ci/gate.py discover candidate
+      - name: Sheaft — SLO, regression and component importance
+        run: python mb3r/ci/gate.py analyze candidate
+      - name: Publish the decision and evidence summary
+        if: always()
+        run: python mb3r/ci/gate.py report
+      - name: Retain bounded evidence even when the gate fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mb3r-resilience-${{ github.run_id }}-${{ github.run_attempt }}
+          path: mb3r/out/ci
+          if-no-files-found: error
+          retention-days: 3
+      - name: Enforce the actual Sheaft exit code
+        if: always()
+        run: python mb3r/ci/gate.py enforce

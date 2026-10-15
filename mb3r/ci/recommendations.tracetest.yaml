@@ -1,0 +1,11 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+type: Test
+spec:
+  id: recommendations-usd-nonempty
+  name: Nonempty USD recommendations with cache disabled
+  trigger:
+    type: http
+    httpRequest:
+      url: http://frontend:8080/api/recommendations?currencyCode=USD
+      method: GET

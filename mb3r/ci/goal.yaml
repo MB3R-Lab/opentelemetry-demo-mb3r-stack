@@ -1,0 +1,15 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+contract:
+  name: io.mb3r.procrustes.goal
+  version: 0.1.0
+scope:
+  namespaces: [compose]
+  services: [frontend, recommendation, product-catalog]
+operation:
+  id: recommendations-usd-nonempty
+  entry_service: frontend
+  method: GET
+  path: /api/recommendations
+  mandatory_targets: [recommendation, product-catalog]
+  scenario_ref: recommendations.tracetest.yaml

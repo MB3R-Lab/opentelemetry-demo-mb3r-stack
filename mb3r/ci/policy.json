@@ -1,0 +1,18 @@
+{
+  "endpoint": "frontend:GET /api/recommendations",
+  "request_path": "/api/recommendations?currencyCode=USD",
+  "predicate_ref": "recommendations.required-calls",
+  "required_call_pairs": [
+    ["frontend", "recommendation"],
+    ["recommendation", "product-catalog"],
+    ["frontend", "product-catalog"]
+  ],
+  "seed": 2719,
+  "trials": 40000,
+  "failure_probability": 0.05,
+  "edge_live_probability": 0.995,
+  "slo": 0.95,
+  "grid": [0, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08, 0.10, 0.12, 0.14, 0.16, 0.18, 0.20, 0.25],
+  "minimum_certified_tolerance": 0.10,
+  "max_regression": 0.02
+}

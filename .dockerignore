@@ -1,6 +1,8 @@
 
 
 .github
+.baseline
+mb3r/out
 docs
 internal
 src/*/README.md

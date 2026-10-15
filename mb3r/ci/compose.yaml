@@ -1,0 +1,76 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+x-telemetry: &telemetry
+  OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+  OTEL_EXPORTER_OTLP_PROTOCOL: grpc
+  OTEL_PROPAGATORS: tracecontext,baggage
+  OTEL_TRACES_SAMPLER: always_on
+  OTEL_BSP_SCHEDULE_DELAY: '200'
+  OTEL_METRICS_EXPORTER: none
+  OTEL_LOGS_EXPORTER: none
+  FLAGD_HOST: flagd
+  FLAGD_PORT: '8013'
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.66.0
+    environment:
+      COLLECTOR_OTLP_ENABLED: 'true'
+    ports: ['127.0.0.1:16686:16686']
+  flagd:
+    image: ghcr.io/open-feature/flagd:v0.13.3
+    command: ['start', '--uri', 'file:/flags.json']
+    volumes: ['./flags.json:/flags.json:ro']
+  postgresql:
+    image: postgres:17.8
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: otel
+      POSTGRES_DB: otel
+    volumes:
+      - '${APP_SOURCE}/src/postgresql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U root -d otel']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  product-catalog:
+    image: mb3r-ci-catalog:${APP_REVISION}
+    build:
+      context: ${APP_SOURCE}
+      dockerfile: src/product-catalog/Dockerfile
+    environment:
+      <<: *telemetry
+      OTEL_SERVICE_NAME: product-catalog
+      PRODUCT_CATALOG_PORT: '3550'
+      OTEL_CONFIG_FILE: /otel-config.yml
+      DB_CONNECTION_STRING: postgres://otelu:otelp@postgresql/otel?sslmode=disable
+    volumes: ['./otel-config.yml:/otel-config.yml:ro']
+    depends_on:
+      postgresql: {condition: service_healthy}
+      flagd: {condition: service_started}
+  recommendation:
+    image: mb3r-ci-recommendation:${APP_REVISION}
+    build:
+      context: ${APP_SOURCE}
+      dockerfile: src/recommendation/Dockerfile
+    environment:
+      <<: *telemetry
+      OTEL_SERVICE_NAME: recommendation
+      RECOMMENDATION_PORT: '9001'
+      PRODUCT_CATALOG_ADDR: product-catalog:3550
+      PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: python
+    depends_on: [product-catalog, flagd]
+  frontend:
+    image: mb3r-ci-frontend:${APP_REVISION}
+    build:
+      context: ${APP_SOURCE}
+      dockerfile: ${CI_PROFILE}/frontend.Dockerfile
+    environment:
+      <<: *telemetry
+      OTEL_SERVICE_NAME: frontend
+      PORT: '8080'
+      HOSTNAME: 0.0.0.0
+      RECOMMENDATION_ADDR: recommendation:9001
+      PRODUCT_CATALOG_ADDR: product-catalog:3550
+    ports: ['127.0.0.1:8080:8080']
+    depends_on: [recommendation, jaeger]

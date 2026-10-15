@@ -1,5 +1,9 @@
 # MB3R Overlay For OpenTelemetry Demo
 
+For pull-request configuration checks using Procrustes, Bering and Sheaft 1.3.1,
+see the separate [recommendations CI gate](ci/README.md). The runtime dashboard
+overlay documented below retains its original versions and semantics.
+
 This overlay keeps the upstream Astronomy Shop demo intact and adds an MB3R path on top of it:
 
 - the existing OpenTelemetry Collector fans out traces to Bering

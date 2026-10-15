@@ -1,0 +1,1 @@
+{"flags":{"recommendationCacheFailure":{"state":"ENABLED","variants":{"off":false},"defaultVariant":"off"},"productCatalogFailure":{"state":"ENABLED","variants":{"off":false},"defaultVariant":"off"},"productCatalogFailureRate":{"state":"ENABLED","variants":{"off":0},"defaultVariant":"off"},"productCatalogLatency":{"state":"ENABLED","variants":{"off":0},"defaultVariant":"off"}}}
