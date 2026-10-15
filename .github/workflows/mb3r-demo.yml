@@ -27,7 +27,7 @@ on:
         required: true
         type: number
       failure_probability:
-        description: Independent failure probability per eligible replica (0..1)
+        description: Independent replica failure probability (greater than 0, at most 1)
         default: 0.05
         required: true
         type: number
@@ -37,7 +37,7 @@ on:
         required: true
         type: number
       minimum_certified_tolerance:
-        description: Required grid tolerance (0..0.25 for the current grid)
+        description: Required tolerance (must be a point on the documented grid)
         default: 0.10
         required: true
         type: number
@@ -52,7 +52,7 @@ on:
         required: true
         type: number
       seed:
-        description: Reproducible seed (integer 0..2147483647)
+        description: Reproducible seed (integer 1..2147483647)
         default: 2719
         required: true
         type: number

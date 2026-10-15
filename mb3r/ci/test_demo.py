@@ -59,10 +59,11 @@ class ManualDemoContracts(unittest.TestCase):
     def test_invalid_inputs_fail_before_deployment(self):
         for key, value in [
             ("slo", 0), ("slo", 1.01), ("slo", "nan"), ("slo", "inf"),
-            ("slo", True), ("failure_probability", -0.01),
+            ("slo", True), ("failure_probability", -0.01), ("failure_probability", 0),
             ("edge_live_probability", 2), ("trials", 999), ("trials", 100001),
-            ("trials", 4000.5), ("seed", -1), ("seed", 3.2),
-            ("minimum_certified_tolerance", 0.3), ("max_regression", -1),
+            ("trials", 4000.5), ("seed", -1), ("seed", 0), ("seed", 3.2),
+            ("minimum_certified_tolerance", 0.3), ("minimum_certified_tolerance", 0.07),
+            ("max_regression", -1),
             ("baseline_replicas", "0/2"), ("candidate_replicas", "2/5"),
             ("candidate_replicas", "2/1; echo bad"), ("baseline_ref", ""),
         ]:

@@ -22,18 +22,23 @@ Probabilities are fractions, not percentage numbers: enter 0.95 for 95%.
 | baseline_replicas | 2/2 | recommendation/catalog replicas, each from 1 to 4 |
 | candidate_replicas | 2/1 | Same two counts for the candidate |
 | slo | 0.95 | Required operation availability, greater than 0 and at most 1 |
-| failure_probability | 0.05 | Independent failure probability per eligible replica |
+| failure_probability | 0.05 | Independent failure probability per eligible replica, greater than 0 and at most 1 |
 | edge_live_probability | 0.995 | Modeled channel liveness |
-| minimum_certified_tolerance | 0.10 | Minimum certified grid tolerance, at most the grid maximum |
+| minimum_certified_tolerance | 0.10 | Minimum certified grid tolerance, must be a point on the versioned grid |
 | max_regression | 0.02 | Maximum drop in certified grid tolerance, 0.02 = 2 percentage points |
 | trials | 40000 | Trials per calculation, integer from 1000 to 100000 |
-| seed | 2719 | Integer from 0 to 2147483647 |
+| seed | 2719 | Integer from 1 to 2147483647 |
 
 The operation is fixed to GET /api/recommendations?currencyCode=USD, requiring
 HTTP 200 with a nonempty list of identified products. The three required calls
 and the sweep grid are versioned in policy.json, not configurable through this
 form. The current grid is 0, .01, .02, .03, .04, .05, .06, .08, .10, .12, .14,
 .16, .18, .20, .25. Both configurations use the same selected policy.
+
+The released Sheaft normalizes a zero profile failure probability and seed zero
+to defaults. The form rejects these two values instead of silently analyzing
+different inputs. Zero failure probability is still explicitly evaluated in
+the sweep, where the tool supports it.
 
 Manual inputs do not edit tracked files. They produce effective policy and
 deployment snapshots with checksums in the run evidence. The same replica
