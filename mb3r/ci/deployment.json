@@ -1,4 +1,4 @@
 {
-  "description": "Accepted recommendations configuration",
-  "replicas": {"recommendation": 2, "product-catalog": 2}
+  "description": "Review candidate: remove one catalog replica",
+  "replicas": {"recommendation": 2, "product-catalog": 1}
 }
