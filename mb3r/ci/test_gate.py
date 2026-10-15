@@ -38,6 +38,13 @@ class IntegrationContracts(unittest.TestCase):
         with self.assertRaises(ValueError):
             gate.verify_running(rows, {"recommendation": 1})
 
+    def test_readiness_retries_startup_connection_reset(self):
+        with patch.object(gate, "request", side_effect=[
+            ConnectionResetError("frontend starting"), {"success": True}
+        ]) as request, patch.object(gate.time, "sleep"):
+            gate.wait_ready("/api/recommendations?currencyCode=USD", Path("unused"))
+            self.assertEqual(request.call_count, 2)
+
     def test_compose_json_formats(self):
         rows = [{"Service": "recommendation"}, {"Service": "product-catalog"}]
         self.assertEqual(gate.containers(json.dumps(rows)), rows)

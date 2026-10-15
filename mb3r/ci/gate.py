@@ -3,6 +3,7 @@
 """Application-side CLI orchestration, evidence capture and reporting; no simulator."""
 import argparse
 import hashlib
+from http.client import HTTPException
 import json
 import os
 from pathlib import Path
@@ -172,7 +173,7 @@ def collect_trace(trace_id):
             if signature == previous:
                 return raw, spans
             previous = signature
-        except (HTTPError, URLError, ValueError, KeyError, TimeoutError):
+        except (OSError, HTTPException, ValueError, KeyError):
             continue
     raise RuntimeError("No complete fresh operation trace; archival fallback is forbidden")
 
@@ -193,24 +194,27 @@ def verify_running(rows, expected):
             raise ValueError(f"{service}: {len(actual)} running replicas, expected {count}")
 
 
+def wait_ready(path, work):
+    deadline = time.monotonic() + 180
+    last = {"error": "no response"}
+    while time.monotonic() < deadline:
+        try:
+            last = request(path)
+            if last["success"]:
+                return
+        except (OSError, HTTPException) as error:
+            last = {"error": str(error)}
+        time.sleep(2)
+    write(work / "readiness-failure.json", last)
+    raise RuntimeError("Nonempty USD operation did not become healthy")
+
+
 def observe(phase):
     _, _, work, _, env, command = context(phase)
     try:
         run(command + ["build", "--parallel"], env=env)
         run(command + ["up", "-d"], env=env)
-        deadline = time.monotonic() + 180
-        last = {"error": "no response"}
-        while time.monotonic() < deadline:
-            try:
-                last = request(policy()["request_path"])
-                if last["success"]:
-                    break
-            except (URLError, TimeoutError) as error:
-                last = {"error": str(error)}
-            time.sleep(2)
-        else:
-            write(work / "readiness-failure.json", last)
-            raise RuntimeError("Nonempty USD operation did not become healthy")
+        wait_ready(policy()["request_path"], work)
         state = containers(run(command + ["ps", "--all", "--format", "json"],
                                capture=True, env=env).stdout)
         write(work / "containers.json", state)
