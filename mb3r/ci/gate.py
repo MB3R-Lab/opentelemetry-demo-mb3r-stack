@@ -78,9 +78,15 @@ def context(phase):
     return source, profile, work, revision, env, command
 
 
-def prepare(phase):
+def prepare(phase, *, replica_override=None, policy_value=None):
     source, profile, work, revision, env, command = context(phase)
-    counts = replicas(read(profile / "deployment.json"))
+    deployment = read(profile / "deployment.json")
+    if replica_override is not None:
+        deployment = {"description": "Manual exploratory override", "replicas": replica_override}
+    counts = replicas(deployment)
+    effective_policy = policy() if policy_value is None else policy_value
+    write(work / "effective-deployment.json", deployment)
+    write(work / "effective-policy.json", effective_policy)
     write(work / "replicas.json",
           {"services": {s: {"deploy": {"replicas": n}} for s, n in counts.items()}})
     resolved = json.loads(run(command + ["config", "--format", "json"],
@@ -99,6 +105,9 @@ def prepare(phase):
         "toolchain_image": os.environ.get("TOOLCHAIN_IMAGE"),
         "replicas": counts, "deployment_sha256": sha256(profile / "deployment.json"),
         "policy_sha256": sha256(base_source() / "mb3r/ci/policy.json"),
+        "effective_deployment_sha256": sha256(work / "effective-deployment.json"),
+        "effective_policy_sha256": sha256(work / "effective-policy.json"),
+        "manual_replica_override": replica_override is not None,
         "resolved_compose_sha256": sha256(work / "static/compose.yaml"),
     })
     run(["procrustes", "analyze", "--source", f"execution={work / 'static'}",
@@ -209,19 +218,20 @@ def wait_ready(path, work):
     raise RuntimeError("Nonempty USD operation did not become healthy")
 
 
-def observe(phase):
+def observe(phase, *, policy_value=None):
     _, _, work, _, env, command = context(phase)
+    p = policy() if policy_value is None else policy_value
     try:
         run(command + ["build", "--parallel"], env=env)
         run(command + ["up", "-d"], env=env)
-        wait_ready(policy()["request_path"], work)
+        wait_ready(p["request_path"], work)
         state = containers(run(command + ["ps", "--all", "--format", "json"],
                                capture=True, env=env).stdout)
         write(work / "containers.json", state)
         verify_running(state, read(work / "provenance.json")["replicas"])
         observations, spans = [], []
         for attempt in (1, 2):
-            observed = request(policy()["request_path"])
+            observed = request(p["request_path"])
             observations.append(observed)
             write(work / "observations.json", observations)
             if not observed["success"]:
@@ -258,9 +268,9 @@ def bind_calls(model, pairs):
     return sorted(required)
 
 
-def discover(phase):
+def discover(phase, *, policy_value=None):
     work = OUT / phase
-    p = policy()
+    p = policy() if policy_value is None else policy_value
     meta = read(work / "provenance.json")
     trace = work / "bering-traces.json"
     preflight = work / "procrustes/bering.overlay.yaml"
@@ -334,10 +344,11 @@ def check_exit(code, report):
         raise ValueError(f"Unexpected Sheaft exit/decision: {code}/{decision}")
 
 
-def analyze(phase):
+def analyze(phase, *, policy_value=None, allow_rejected_baseline=False):
     work = OUT / phase
     baseline = OUT / "baseline/model.json" if phase == "candidate" else None
-    config = analysis_config(policy(), work / "predicate.json", baseline)
+    p = policy() if policy_value is None else policy_value
+    config = analysis_config(p, work / "predicate.json", baseline)
     write(work / "analysis.json", config)
     result = run(["sheaft", "run", "--model", work / "model.json",
                   "--analysis", work / "analysis.json", "--out-dir", work / "sheaft",
@@ -346,7 +357,7 @@ def analyze(phase):
     check_exit(result.returncode, report)
     write(work / "exit.json", {"code": result.returncode,
                               "decision": report["policy_evaluation"]["decision"]})
-    if phase == "baseline" and result.returncode:
+    if phase == "baseline" and result.returncode and not allow_rejected_baseline:
         raise ValueError("Baseline does not pass the accepted policy")
     # Candidate exit 2 is retained, not swallowed: enforce runs after report upload.
 

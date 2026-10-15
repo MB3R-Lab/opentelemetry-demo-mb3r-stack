@@ -10,11 +10,15 @@ on:
     paths-ignore:
       - 'mb3r/ci/**'
       - '.github/workflows/mb3r-resilience.yml'
+      - '.github/workflows/mb3r-demo.yml'
+      - '.github/workflows/checks.yml'
   pull_request:
     branches: [main]
     paths-ignore:
       - 'mb3r/ci/**'
       - '.github/workflows/mb3r-resilience.yml'
+      - '.github/workflows/mb3r-demo.yml'
+      - '.github/workflows/checks.yml'
   workflow_dispatch:
 
 permissions:
