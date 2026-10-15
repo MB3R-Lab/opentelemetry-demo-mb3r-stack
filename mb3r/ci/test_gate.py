@@ -11,6 +11,14 @@ import gate
 
 
 class IntegrationContracts(unittest.TestCase):
+    def test_frontend_initializes_all_client_targets(self):
+        frontend = Path(__file__).with_name("compose.yaml").read_text(encoding="utf-8").split(
+            "\n  frontend:\n", 1)[1]
+        for variable in ("RECOMMENDATION_ADDR", "PRODUCT_CATALOG_ADDR", "AD_ADDR",
+                         "CART_ADDR", "CHECKOUT_ADDR", "CURRENCY_ADDR", "SHIPPING_ADDR",
+                         "PRODUCT_REVIEWS_ADDR"):
+            self.assertIn(variable + ":", frontend)
+
     def test_replica_map(self):
         self.assertEqual(gate.replicas({"replicas": {"recommendation": 2, "product-catalog": 1}}),
                          {"recommendation": 2, "product-catalog": 1})
