@@ -180,4 +180,5 @@ jobs:
         env:
           REPORT_URL: ${{ steps.deployment.outputs.page_url }}
         run: |
-          echo "Manual exploratory report (latest published run): $REPORT_URL" >> "$GITHUB_STEP_SUMMARY"
+          echo "## [Open HTML report]($REPORT_URL)" >> "$GITHUB_STEP_SUMMARY"
+          echo "Latest published main-branch run. Check the run ID in the report header." >> "$GITHUB_STEP_SUMMARY"

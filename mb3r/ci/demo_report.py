@@ -91,6 +91,14 @@ def summary(result):
              "", f"Operation: {result['endpoint']}", "",
              "| Configuration | Replicas R/C | Model availability | Certified grid tolerance | Decision |",
              "|---|---:|---:|---:|---|"]
+    owner, repository = result["run_url"].split("/")[3:5]
+    if owner and repository:
+        pages_url = f"https://{owner.lower()}.github.io/{repository}/"
+        lines[2:2] = [
+            f"## [Open HTML report]({pages_url})", "",
+            "The page shows the latest published main-branch run. "
+            "The Pages job publishes it after analysis; check the run ID in the report header.", "",
+        ]
     for row in result["rows"]:
         counts = row["replicas"]
         lines.append(f"| {row['phase']} | {counts['recommendation']}/{counts['product-catalog']} | "
@@ -103,8 +111,8 @@ def summary(result):
         lines += [f"- {r['id']}: {r.get('message', '')}" for r in row["reasons"]]
     lines += ["", *result["errors"], "",
               "The downloadable mb3r-demo-report artifact contains index.html and result.json. "
-              "Main-branch runs also publish the latest report to GitHub Pages; "
-              "the Pages deployment job links the site. The site may later show a newer run.",
+              "Main-branch runs also publish the latest report at the HTML link above. "
+              "The site may later show a newer run.",
               "", "Healthy requests/traces are execution evidence; availability and tolerance "
               "are model-based, not measured uptime or failover. Pointwise Wilson intervals "
               "do not give a simultaneous 95% policy guarantee.", ""]
