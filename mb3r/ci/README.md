@@ -1,8 +1,8 @@
 # Recommendations resilience gate
 
-This is the existing OpenTelemetry fork that also contains the older runtime
-monitoring overlay. The application CI profiles in this directory are independent
-of that overlay; they do not launch Grafana or its exporter.
+This directory contains application CI profiles for OpenTelemetry Demo. They
+operate independently of the runtime-monitoring overlay and do not launch
+Grafana or its exporter.
 
 Two entry points are available:
 
@@ -13,9 +13,9 @@ Two entry points are available:
 
 The manual demo never satisfies or replaces the required PR status check.
 
-This is an application-consumer integration of Procrustes, Bering and Sheaft,
-not a copy of the paper reproduction runner. Open **Actions → MB3R resilience
-gate → Run workflow**, or open a pull request against this fork's main branch.
+The pipeline invokes the public Procrustes, Bering and Sheaft CLIs directly.
+Open **Actions → MB3R resilience gate → Run workflow**, or open a pull request
+against this fork's main branch.
 No local application deployment is needed.
 
 ## What a run does
@@ -76,9 +76,9 @@ gate.py is standard-library integration glue: it prepares CLI inputs, captures
 HTTP/Jaeger evidence, validates the handoffs and formats reports. It implements
 no availability estimator, SLO solver or component-importance calculation.
 
-The older mb3r/docker-compose.mb3r.yml live-dashboard overlay remains separate.
-Its old Sheaft version and exporter-derived verdict are not used by this gate.
-Published-study reproduction and operation fault-state validation remain in the
+The mb3r/docker-compose.mb3r.yml runtime overlay uses a separate Sheaft pin and
+an exporter-derived verdict; neither participates in this gate.
+Published-study reproduction and operation fault-state validation are in the
 [separate artifact](https://github.com/MB3R-Lab/mb3r-software-complex-repro).
 
 ## Limits and fail-closed behavior
