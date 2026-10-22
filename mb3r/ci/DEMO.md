@@ -7,10 +7,10 @@ The selected workflow branch is the candidate application revision. The baseline
 revision is selected separately. Both revisions must contain the recommendations
 CI deployment profile.
 
-This is the same OTel fork as the older runtime-monitoring demo, not a new
-repository. The workflow uses the standalone application CI profile in this
-directory and the pinned Procrustes 0.1.0 / Bering 1.0.0 / Sheaft 1.3.1 CLIs.
-It does not use the old dashboard, exporter or paper-reproduction entrypoint.
+The workflow uses the application CI profile in this directory and the pinned
+Procrustes 0.1.0 / Bering 1.0.0 / Sheaft 1.3.1 CLIs. It collects fresh evidence
+independently of the runtime-monitoring dashboard and exporter; analysis invokes
+the public tool CLIs directly.
 
 ## Parameters
 

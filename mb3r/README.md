@@ -84,7 +84,7 @@ Runtime endpoints:
 
 ## Overlay Semantics
 
-The current milestone models four target frontend journeys:
+The runtime overlay evaluates four target frontend journeys:
 
 - `Browse Products` -> `frontend:GET /api/products`
 - `View Recommendations` -> `frontend:GET /api/recommendations`
