@@ -1,4 +1,4 @@
 {
-  "description": "Accepted recommendations configuration",
+  "description": "Verified alternative correction: restore catalog replication",
   "replicas": {"recommendation": 2, "product-catalog": 2}
 }
