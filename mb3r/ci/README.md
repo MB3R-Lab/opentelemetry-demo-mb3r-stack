@@ -1,5 +1,7 @@
 # Recommendations resilience gate
 
+<!-- markdownlint-disable MD013 -->
+
 This directory contains application CI profiles for OpenTelemetry Demo. They
 operate independently of the runtime-monitoring overlay and do not launch
 Grafana or its exporter.
@@ -7,14 +9,14 @@ Grafana or its exporter.
 Two entry points are available:
 
 | Workflow | Purpose | Parameters |
-|---|---|---|
+| --- | --- | --- |
 | MB3R resilience gate | Required PR acceptance check | Policy from the base commit |
 | [MB3R parameterized demo](DEMO.md) | Manual exploration with HTML/SVG report | Replica counts, SLO, failure model, trials and seed |
 
 The manual demo never satisfies or replaces the required PR status check.
 
 The pipeline invokes the public Procrustes, Bering and Sheaft CLIs directly.
-Open **Actions → MB3R resilience gate → Run workflow**, or open a pull request
+Open **Actions > MB3R resilience gate > Run workflow**, or open a pull request
 against this fork's main branch.
 No local application deployment is needed.
 
@@ -47,7 +49,7 @@ The accepted declaration is recommendation/catalog = **2/2**. Edit only
 deployment.json in a PR; do not change the policy to obtain a green check.
 
 | Candidate | Expected model-based outcome |
-|---|---|
+| --- | --- |
 | 2/1: remove a catalog replica | Reject: availability and grid tolerance below requirements |
 | 3/1: add a recommendation replica to the reduced configuration | Still reject |
 | 2/2: restore the catalog replica | Pass |
@@ -67,8 +69,8 @@ check; this example does not deploy an application to production.
 ## Toolchain and separation of responsibilities
 
 The workflow extracts the three public CLI binaries from the immutable
-[v1.3.3 toolchain image](https://github.com/MB3R-Lab/mb3r-software-complex-repro/releases/tag/v1.3.3):
-Procrustes 0.1.0, Bering 1.0.0 and Sheaft 1.3.1. It does **not** invoke the
+[v1.3.4 toolchain image](https://github.com/MB3R-Lab/mb3r-software-complex-repro/pkgs/container/mb3r-software-complex-repro):
+Procrustes 0.1.0, Bering 1.1.1 and Sheaft 1.3.2. It does **not** invoke the
 image's reproduction entrypoint or use archived traces or reference decisions.
 The source pins travel with each run as toolchain-lock.json.
 

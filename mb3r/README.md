@@ -1,8 +1,10 @@
 # MB3R Overlay For OpenTelemetry Demo
 
-For pull-request configuration checks using Procrustes, Bering and Sheaft 1.3.1,
-see the separate [recommendations CI gate](ci/README.md). The runtime dashboard
-overlay documented below retains its original versions and semantics.
+<!-- markdownlint-disable MD013 -->
+
+For pull-request configuration checks using the separately pinned Procrustes,
+Bering and Sheaft toolchain image, see the [recommendations CI gate](ci/README.md).
+That CI image remains independent of the runtime dashboard pins below.
 
 This overlay keeps the upstream Astronomy Shop demo intact and adds an MB3R path on top of it:
 
@@ -21,8 +23,15 @@ This is a resilience posture overlay, not a replacement for the demo's existing 
 
 Pinned MB3R component versions:
 
-- Bering `v1.0.0` (`io.mb3r.bering.snapshot@1.3.0`)
-- Sheaft `v1.1.0`
+- Bering `v1.1.1` (`io.mb3r.bering.snapshot@1.3.0`), commit
+  `dccd1bca39b6ee85a79e5e245bdd2e727f0da1a3`, image digest
+  `sha256:f39d2241d9631fec070ece4aa8e96687b16e1d480cef2a95d7a2f4db74da6cea`
+- Sheaft `v1.3.2`, image digest
+  `sha256:12e3999a87bf2cb8a472457c3f6534b40d2e3e84feefb250372abbe6a42a9187`
+
+The workflow toolchain image remains pinned separately in
+`.github/workflows/mb3r-resilience.yml` and `.github/workflows/mb3r-demo.yml`;
+updating these runtime services does not silently change the CI analysis tools.
 
 ## Start
 

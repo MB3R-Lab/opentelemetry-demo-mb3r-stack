@@ -27,7 +27,7 @@ jobs:
     timeout-minutes: 40
     env:
       BASE_SOURCE: ${{ github.workspace }}/.baseline
-      TOOLCHAIN_IMAGE: ghcr.io/mb3r-lab/mb3r-software-complex-repro@sha256:b6fb43c7988168cd2d80b2df37881bf6972d8018b824be69dadb5c4c41416e90
+      TOOLCHAIN_IMAGE: ghcr.io/mb3r-lab/mb3r-software-complex-repro:v1.3.4@sha256:8bcb4b6a13a2102166284d2ac4545588a2d6315b3140786eb2c058f50983fa23
       PYTHONUNBUFFERED: '1'
     steps:
       - name: Check out the candidate application

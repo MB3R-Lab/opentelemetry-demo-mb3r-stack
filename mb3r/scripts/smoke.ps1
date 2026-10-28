@@ -1,3 +1,8 @@
+<#
+ Copyright The OpenTelemetry Authors
+ SPDX-License-Identifier: Apache-2.0
+#>
+
 param(
   [int]$TimeoutSeconds = 420,
   [string]$BaseUrl = 'http://localhost:8080'
