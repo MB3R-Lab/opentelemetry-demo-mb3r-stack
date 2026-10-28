@@ -3,7 +3,7 @@
 
 services:
   bering:
-    image: ghcr.io/mb3r-lab/bering@sha256:1da482d2629f695e0109525fb9c27e1fd8c502da85af4bbae95ddb176969c3d5
+    image: ghcr.io/mb3r-lab/bering@sha256:8357f1ab3262d32813dba3811a1c642ae2a659e9b1f1482ce071a82589ae5511
     container_name: bering
     restart: unless-stopped
     command: ["serve", "--config", "/etc/mb3r/bering/serve.yaml"]
@@ -33,7 +33,7 @@ services:
         condition: service_started
 
   sheaft:
-    image: ghcr.io/mb3r-lab/sheaft@sha256:d33f5890f051ca57d380cacc11825979396534289174ccd64079b5e037503351
+    image: ghcr.io/mb3r-lab/sheaft@sha256:12e3999a87bf2cb8a472457c3f6534b40d2e3e84feefb250372abbe6a42a9187
     container_name: sheaft
     restart: unless-stopped
     command: ["serve", "--config", "/etc/mb3r/sheaft/serve.yaml"]
