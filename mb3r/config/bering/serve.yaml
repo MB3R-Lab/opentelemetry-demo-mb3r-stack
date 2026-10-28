@@ -1,3 +1,6 @@
+# Copyright The OpenTelemetry Authors
+# SPDX-License-Identifier: Apache-2.0
+
 server:
   listen_address: ":4318"
   grpc_listen_address: ""

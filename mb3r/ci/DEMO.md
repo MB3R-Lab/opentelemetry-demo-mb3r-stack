@@ -1,5 +1,7 @@
 # Parameterized application demo
 
+<!-- markdownlint-disable MD013 -->
+
 Open [Actions > MB3R parameterized demo](https://github.com/MB3R-Lab/opentelemetry-demo-mb3r-stack/actions/workflows/mb3r-demo.yml)
 and choose **Run workflow**. Use the main branch to publish a browser-readable
 report to [GitHub Pages](https://mb3r-lab.github.io/opentelemetry-demo-mb3r-stack/).
@@ -17,7 +19,7 @@ the public tool CLIs directly.
 Probabilities are fractions, not percentage numbers: enter 0.95 for 95%.
 
 | Input | Default | Meaning |
-|---|---|---|
+| --- | --- | --- |
 | baseline_ref | main | Baseline application branch or commit |
 | baseline_replicas | 2/2 | recommendation/catalog replicas, each from 1 to 4 |
 | candidate_replicas | 2/1 | Same two counts for the candidate |
@@ -50,7 +52,7 @@ actual running counts are checked.
 Keep baseline 2/2 and all other defaults; change only candidate_replicas:
 
 | Candidate | Question | Expected model outcome |
-|---|---|---|
+| --- | --- | --- |
 | 2/1 | What if one catalog replica is removed? | Reject |
 | 3/1 | Does one extra recommendation replica compensate? | Still reject |
 | 2/2 | Does restoring the catalog replica satisfy the policy? | Pass |

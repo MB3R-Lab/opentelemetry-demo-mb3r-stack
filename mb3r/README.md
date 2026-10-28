@@ -1,5 +1,7 @@
 # MB3R Overlay For OpenTelemetry Demo
 
+<!-- markdownlint-disable MD013 -->
+
 For pull-request configuration checks using the separately pinned Procrustes,
 Bering and Sheaft toolchain image, see the [recommendations CI gate](ci/README.md).
 That CI image remains independent of the runtime dashboard pins below.

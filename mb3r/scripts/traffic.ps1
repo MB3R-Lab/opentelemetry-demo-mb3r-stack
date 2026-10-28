@@ -1,3 +1,8 @@
+<#
+ Copyright The OpenTelemetry Authors
+ SPDX-License-Identifier: Apache-2.0
+#>
+
 param(
   [ValidateSet('all', 'core', 'products', 'recommendations', 'cart', 'checkout')]
   [string]$Scenario = 'all',

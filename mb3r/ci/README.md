@@ -1,5 +1,7 @@
 # Recommendations resilience gate
 
+<!-- markdownlint-disable MD013 -->
+
 This directory contains application CI profiles for OpenTelemetry Demo. They
 operate independently of the runtime-monitoring overlay and do not launch
 Grafana or its exporter.
@@ -7,7 +9,7 @@ Grafana or its exporter.
 Two entry points are available:
 
 | Workflow | Purpose | Parameters |
-|---|---|---|
+| --- | --- | --- |
 | MB3R resilience gate | Required PR acceptance check | Policy from the base commit |
 | [MB3R parameterized demo](DEMO.md) | Manual exploration with HTML/SVG report | Replica counts, SLO, failure model, trials and seed |
 
@@ -47,7 +49,7 @@ The accepted declaration is recommendation/catalog = **2/2**. Edit only
 deployment.json in a PR; do not change the policy to obtain a green check.
 
 | Candidate | Expected model-based outcome |
-|---|---|
+| --- | --- |
 | 2/1: remove a catalog replica | Reject: availability and grid tolerance below requirements |
 | 3/1: add a recommendation replica to the reduced configuration | Still reject |
 | 2/2: restore the catalog replica | Pass |
