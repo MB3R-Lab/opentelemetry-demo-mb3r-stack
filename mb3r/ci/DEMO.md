@@ -1,6 +1,6 @@
 # Parameterized application demo
 
-Open [Actions → MB3R parameterized demo](https://github.com/MB3R-Lab/opentelemetry-demo-mb3r-stack/actions/workflows/mb3r-demo.yml)
+Open [Actions > MB3R parameterized demo](https://github.com/MB3R-Lab/opentelemetry-demo-mb3r-stack/actions/workflows/mb3r-demo.yml)
 and choose **Run workflow**. Use the main branch to publish a browser-readable
 report to [GitHub Pages](https://mb3r-lab.github.io/opentelemetry-demo-mb3r-stack/).
 The selected workflow branch is the candidate application revision. The baseline

@@ -21,10 +21,19 @@ class SnapshotSanitizerContract(unittest.TestCase):
             "snapshot_id": "synthetic-window",
             "counts": {"services": 2, "edges": 1, "endpoints": 2},
             "discovery": {
-                "services": [{"id": "api", "support": {"observations": 1},
-                              "metadata": {"attributes": {evidence_key: evidence_value}}}],
-                "edges": [{"id": "observed-edge", "metadata": {
-                    "attributes": {evidence_key: evidence_value}}}],
+                "services": [
+                    {
+                        "id": "api",
+                        "support": {"observations": 1},
+                        "metadata": {"attributes": {evidence_key: evidence_value}},
+                    }
+                ],
+                "edges": [
+                    {
+                        "id": "observed-edge",
+                        "metadata": {"attributes": {evidence_key: evidence_value}},
+                    }
+                ],
             },
             "model": {
                 "metadata": {"source_type": "bering"},
@@ -40,17 +49,30 @@ class SnapshotSanitizerContract(unittest.TestCase):
             },
         }
         sanitized = sanitizer.sanitize_snapshot(
-            snapshot, {"api:GET /ready": ["api", "worker"],
-                       "api:GET /missing": ["unknown-service"]})
+            snapshot,
+            {
+                "api:GET /ready": ["api", "worker"],
+                "api:GET /missing": ["unknown-service"],
+            },
+        )
 
-        self.assertEqual([item["id"] for item in sanitized["model"]["endpoints"]],
-                         ["api:GET /ready"])
-        self.assertEqual(sanitized["discovery"]["services"][0]["metadata"]["attributes"][evidence_key],
-                         evidence_value)
-        self.assertEqual(sanitized["discovery"]["edges"][0]["metadata"]["attributes"][evidence_key],
-                         evidence_value)
+        self.assertEqual(
+            [item["id"] for item in sanitized["model"]["endpoints"]], ["api:GET /ready"]
+        )
+        self.assertEqual(
+            sanitized["discovery"]["services"][0]["metadata"]["attributes"][
+                evidence_key
+            ],
+            evidence_value,
+        )
+        self.assertEqual(
+            sanitized["discovery"]["edges"][0]["metadata"]["attributes"][evidence_key],
+            evidence_value,
+        )
         self.assertEqual(sanitized["discovery"], snapshot["discovery"])
-        self.assertEqual(sanitized["counts"], {"services": 2, "edges": 1, "endpoints": 1})
+        self.assertEqual(
+            sanitized["counts"], {"services": 2, "edges": 1, "endpoints": 1}
+        )
         self.assertEqual(len(snapshot["model"]["endpoints"]), 2)
 
 

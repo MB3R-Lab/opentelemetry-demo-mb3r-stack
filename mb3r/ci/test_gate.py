@@ -12,33 +12,56 @@ import gate
 
 class IntegrationContracts(unittest.TestCase):
     def test_frontend_initializes_all_client_targets(self):
-        frontend = Path(__file__).with_name("compose.yaml").read_text(encoding="utf-8").split(
-            "\n  frontend:\n", 1)[1]
-        for variable in ("RECOMMENDATION_ADDR", "PRODUCT_CATALOG_ADDR", "AD_ADDR",
-                         "CART_ADDR", "CHECKOUT_ADDR", "CURRENCY_ADDR", "SHIPPING_ADDR",
-                         "PRODUCT_REVIEWS_ADDR"):
+        frontend = (
+            Path(__file__)
+            .with_name("compose.yaml")
+            .read_text(encoding="utf-8")
+            .split("\n  frontend:\n", 1)[1]
+        )
+        for variable in (
+            "RECOMMENDATION_ADDR",
+            "PRODUCT_CATALOG_ADDR",
+            "AD_ADDR",
+            "CART_ADDR",
+            "CHECKOUT_ADDR",
+            "CURRENCY_ADDR",
+            "SHIPPING_ADDR",
+            "PRODUCT_REVIEWS_ADDR",
+        ):
             self.assertIn(variable + ":", frontend)
 
     def test_replica_map(self):
-        self.assertEqual(gate.replicas({"replicas": {"recommendation": 2, "product-catalog": 1}}),
-                         {"recommendation": 2, "product-catalog": 1})
+        self.assertEqual(
+            gate.replicas({"replicas": {"recommendation": 2, "product-catalog": 1}}),
+            {"recommendation": 2, "product-catalog": 1},
+        )
         for value in (0, -1, 5, True, 1.5, "2"):
             with self.subTest(value=value), self.assertRaises(ValueError):
-                gate.replicas({"replicas": {"recommendation": value, "product-catalog": 2}})
+                gate.replicas(
+                    {"replicas": {"recommendation": value, "product-catalog": 2}}
+                )
         with self.assertRaises(ValueError):
             gate.replicas({"replicas": {"recommendation": 2}})
 
     def test_success_requires_nonempty_identified_products(self):
         self.assertTrue(gate.response_success(200, '[{"id":"one"}]'))
-        for status, body in [(500, '[{"id":"one"}]'), (200, "[]"), (200, "{}"),
-                             (200, '[{"id":""}]'), (200, '[{"id":" "}]'),
-                             (200, '[{"id":7}]'), (200, "broken")]:
+        for status, body in [
+            (500, '[{"id":"one"}]'),
+            (200, "[]"),
+            (200, "{}"),
+            (200, '[{"id":""}]'),
+            (200, '[{"id":" "}]'),
+            (200, '[{"id":7}]'),
+            (200, "broken"),
+        ]:
             with self.subTest(status=status, body=body):
                 self.assertFalse(gate.response_success(status, body))
 
     def test_running_replica_counts(self):
-        rows = [{"Service": "recommendation", "State": "running"},
-                {"Service": "product-catalog", "State": "running"}]
+        rows = [
+            {"Service": "recommendation", "State": "running"},
+            {"Service": "product-catalog", "State": "running"},
+        ]
         gate.verify_running(rows, {"recommendation": 1, "product-catalog": 1})
         with self.assertRaises(ValueError):
             gate.verify_running(rows, {"recommendation": 2, "product-catalog": 1})
@@ -47,9 +70,11 @@ class IntegrationContracts(unittest.TestCase):
             gate.verify_running(rows, {"recommendation": 1})
 
     def test_readiness_retries_startup_connection_reset(self):
-        with patch.object(gate, "request", side_effect=[
-            ConnectionResetError("frontend starting"), {"success": True}
-        ]) as request, patch.object(gate.time, "sleep"):
+        with patch.object(
+            gate,
+            "request",
+            side_effect=[ConnectionResetError("frontend starting"), {"success": True}],
+        ) as request, patch.object(gate.time, "sleep"):
             gate.wait_ready("/api/recommendations?currencyCode=USD", Path("unused"))
             self.assertEqual(request.call_count, 2)
 
@@ -59,24 +84,54 @@ class IntegrationContracts(unittest.TestCase):
         self.assertEqual(gate.containers("\n".join(json.dumps(x) for x in rows)), rows)
 
     def test_required_calls_are_observed_not_fabricated(self):
-        edge = {"id": "actual-id", "from": "frontend", "to": "recommendation",
-                "kind": "sync", "blocking": True}
-        self.assertEqual(gate.bind_calls({"edges": [edge]}, [["frontend", "recommendation"]]),
-                         ["actual-id"])
+        edge = {
+            "id": "actual-id",
+            "from": "frontend",
+            "to": "recommendation",
+            "kind": "sync",
+            "blocking": True,
+        }
+        self.assertEqual(
+            gate.bind_calls({"edges": [edge]}, [["frontend", "recommendation"]]),
+            ["actual-id"],
+        )
         for edges in ([], [edge, edge], [dict(edge, kind="async")]):
             with self.subTest(edges=edges), self.assertRaises(ValueError):
                 gate.bind_calls({"edges": edges}, [["frontend", "recommendation"]])
 
     def trace(self):
-        return {"data": [{"traceID": "fresh", "processes": {
-            str(i): {"serviceName": name}
-            for i, name in enumerate(("frontend", "recommendation", "product-catalog"))
-        }, "spans": [
-            {"traceID": "fresh", "spanID": str(i), "processID": str(i),
-             "operationName": name, "startTime": 1_000_000, "duration": 20,
-             "references": [], "tags": [{"key": "span.kind", "value": "server"}]}
-            for i, name in enumerate(("GET /api/recommendations", "ListRecommendations", "ListProducts"))
-        ]}]}
+        return {
+            "data": [
+                {
+                    "traceID": "fresh",
+                    "processes": {
+                        str(i): {"serviceName": name}
+                        for i, name in enumerate(
+                            ("frontend", "recommendation", "product-catalog")
+                        )
+                    },
+                    "spans": [
+                        {
+                            "traceID": "fresh",
+                            "spanID": str(i),
+                            "processID": str(i),
+                            "operationName": name,
+                            "startTime": 1_000_000,
+                            "duration": 20,
+                            "references": [],
+                            "tags": [{"key": "span.kind", "value": "server"}],
+                        }
+                        for i, name in enumerate(
+                            (
+                                "GET /api/recommendations",
+                                "ListRecommendations",
+                                "ListProducts",
+                            )
+                        )
+                    ],
+                }
+            ]
+        }
 
     def test_trace_linkage_and_completeness(self):
         raw = self.trace()
@@ -114,23 +169,36 @@ class IntegrationContracts(unittest.TestCase):
     def test_exit_and_report_must_agree(self):
         gate.check_exit(0, {"policy_evaluation": {"decision": "pass"}})
         gate.check_exit(2, {"policy_evaluation": {"decision": "fail"}})
-        for code, decision in ((0, "fail"), (2, "pass"), (0, "warn"),
-                               (0, "report"), (1, "pass")):
-            with self.subTest(code=code, decision=decision), self.assertRaises(ValueError):
+        for code, decision in (
+            (0, "fail"),
+            (2, "pass"),
+            (0, "warn"),
+            (0, "report"),
+            (1, "pass"),
+        ):
+            with self.subTest(code=code, decision=decision), self.assertRaises(
+                ValueError
+            ):
                 gate.check_exit(code, {"policy_evaluation": {"decision": decision}})
 
     def test_enforcement_preserves_rejection_and_missing_evidence_fails(self):
-        with tempfile.TemporaryDirectory() as directory, patch.object(gate, "OUT", Path(directory)):
+        with tempfile.TemporaryDirectory() as directory, patch.object(
+            gate, "OUT", Path(directory)
+        ):
             with self.assertRaises(FileNotFoundError):
                 gate.enforce()
             for phase in ("baseline", "candidate"):
                 gate.write(gate.OUT / phase / "exit.json", {"code": 0})
-                gate.write(gate.OUT / phase / "sheaft/report.json",
-                           {"policy_evaluation": {"decision": "pass"}})
+                gate.write(
+                    gate.OUT / phase / "sheaft/report.json",
+                    {"policy_evaluation": {"decision": "pass"}},
+                )
             self.assertEqual(gate.enforce(), 0)
             gate.write(gate.OUT / "candidate/exit.json", {"code": 2})
-            gate.write(gate.OUT / "candidate/sheaft/report.json",
-                       {"policy_evaluation": {"decision": "fail"}})
+            gate.write(
+                gate.OUT / "candidate/sheaft/report.json",
+                {"policy_evaluation": {"decision": "fail"}},
+            )
             self.assertEqual(gate.enforce(), 2)
 
 

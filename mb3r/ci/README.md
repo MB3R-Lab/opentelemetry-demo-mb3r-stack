@@ -14,7 +14,7 @@ Two entry points are available:
 The manual demo never satisfies or replaces the required PR status check.
 
 The pipeline invokes the public Procrustes, Bering and Sheaft CLIs directly.
-Open **Actions → MB3R resilience gate → Run workflow**, or open a pull request
+Open **Actions > MB3R resilience gate > Run workflow**, or open a pull request
 against this fork's main branch.
 No local application deployment is needed.
 
