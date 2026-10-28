@@ -59,7 +59,7 @@ def configuration(inputs, base_policy):
     if not 0 < policy["slo"] <= 1:
         raise ValueError("SLO must be greater than zero")
     if policy["failure_probability"] == 0:
-        raise ValueError("Selected-point failure_probability must be > 0: Sheaft 1.3.1 "
+        raise ValueError("Selected-point failure_probability must be > 0: Sheaft 1.3.2 "
                          "normalizes a zero profile probability to its default; "
                          "zero is still evaluated explicitly in the sweep")
     if policy["minimum_certified_tolerance"] not in policy["grid"]:

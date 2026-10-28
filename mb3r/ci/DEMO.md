@@ -8,7 +8,7 @@ revision is selected separately. Both revisions must contain the recommendations
 CI deployment profile.
 
 The workflow uses the application CI profile in this directory and the pinned
-Procrustes 0.1.0 / Bering 1.0.0 / Sheaft 1.3.1 CLIs. It collects fresh evidence
+Procrustes 0.1.0 / Bering 1.1.1 / Sheaft 1.3.2 CLIs. It collects fresh evidence
 independently of the runtime-monitoring dashboard and exporter; analysis invokes
 the public tool CLIs directly.
 
