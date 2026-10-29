@@ -23,7 +23,7 @@ This is a resilience posture overlay, not a replacement for the demo's existing 
 
 Pinned MB3R component versions:
 
-- Bering `v1.1.1` (`io.mb3r.bering.snapshot@1.3.0`), commit
+- Bering `v1.2.0` (`io.mb3r.bering.snapshot@1.3.0`), commit
   `6f806428509a640a6419058c2ad845ed44db7512`, image digest
   `sha256:f706b79172a8322d53422de8d08a47d7779d0fbe2909511fa08385608b74c15b`
 - Sheaft `v1.3.2`, image digest
