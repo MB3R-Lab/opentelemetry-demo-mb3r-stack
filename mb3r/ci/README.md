@@ -69,8 +69,8 @@ check; this example does not deploy an application to production.
 ## Toolchain and separation of responsibilities
 
 The workflow extracts the three public CLI binaries from the immutable
-[v1.3.4 toolchain image](https://github.com/MB3R-Lab/mb3r-software-complex-repro/pkgs/container/mb3r-software-complex-repro):
-Procrustes 0.1.0, Bering 1.1.1 and Sheaft 1.3.2. It does **not** invoke the
+[v1.3.5 toolchain image](https://github.com/MB3R-Lab/mb3r-software-complex-repro/pkgs/container/mb3r-software-complex-repro):
+Procrustes 0.1.0, Bering 1.2.0 and Sheaft 1.3.2. It does **not** invoke the
 image's reproduction entrypoint or use archived traces or reference decisions.
 The source pins travel with each run as toolchain-lock.json.
 
