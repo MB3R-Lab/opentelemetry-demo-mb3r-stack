@@ -3,7 +3,7 @@
 
 services:
   bering:
-    image: ghcr.io/mb3r-lab/bering@sha256:f706b79172a8322d53422de8d08a47d7779d0fbe2909511fa08385608b74c15b
+    image: ghcr.io/mb3r-lab/bering@sha256:95c29e311edfb5297c8bc22da6201a122f07e9492770a384fe93d8fac7d0da9c
     container_name: bering
     restart: unless-stopped
     command: ["serve", "--config", "/etc/mb3r/bering/serve.yaml"]
