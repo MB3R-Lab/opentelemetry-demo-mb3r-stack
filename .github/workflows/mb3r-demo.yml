@@ -73,7 +73,7 @@ jobs:
       report_ready: ${{ steps.pages-artifact.outcome == 'success' }}
     env:
       BASE_SOURCE: ${{ github.workspace }}/.baseline
-      TOOLCHAIN_IMAGE: ghcr.io/mb3r-lab/mb3r-software-complex-repro:v1.3.4@sha256:8bcb4b6a13a2102166284d2ac4545588a2d6315b3140786eb2c058f50983fa23
+      TOOLCHAIN_IMAGE: ghcr.io/mb3r-lab/mb3r-software-complex-repro:v1.3.5@sha256:61061c9a0e54b38af0adc12d66aacace5ad9c4acce782bb6c92be294c2e9dfa3
       PYTHONUNBUFFERED: '1'
     steps:
       - name: Check out the candidate application
